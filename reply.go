@@ -1,11 +1,11 @@
-package main
+package epoxy
 
 import (
 	"net/http"
 )
 
 func ProcessReply(res *http.Response) {
-	requestID := res.Header.Get(HeaderRequestID)
+	requestID := res.Header.Get(EpoxyHeaderRequestID)
 	if requestID == "" {
 		return
 	}

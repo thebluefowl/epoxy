@@ -1,4 +1,4 @@
-package main
+package epoxy
 
 import (
 	"bufio"
@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -62,17 +63,29 @@ func (c *websocketConn) Close() {
 func WebsocketHandler() http.HandlerFunc {
 	upgrader := websocket.Upgrader{}
 	return func(w http.ResponseWriter, r *http.Request) {
-		target := r.Header.Get("X-Epoxy-Source")
-		if target == "" {
-			http.Error(w, "Missing X-Target header", http.StatusBadRequest)
+		source := extractSource(r)
+		if source == "" {
+			http.Error(w, "client initialization failed, must contain source", http.StatusBadRequest)
 			return
 		}
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			http.Error(w, "Failed to upgrade connection", http.StatusInternalServerError)
+			http.Error(w, "failed to upgrade connection", http.StatusInternalServerError)
 			return
 		}
-		clientRegistry.Register(target, newWebsocketConn(conn))
-		clientRegistry.Listen(target)
+		clientRegistry.Register(source, newWebsocketConn(conn))
+		clientRegistry.Listen(source)
 	}
+}
+
+func extractSource(r *http.Request) string {
+	source := r.Header.Get(EpoxyHeaderSource)
+	if source != "" {
+		return source
+	}
+	domainParts := strings.Split(r.Host, ".")
+	if len(domainParts) < 2 {
+		return ""
+	}
+	return domainParts[0]
 }

@@ -1,25 +1,33 @@
-package main
+package epoxy
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
-func main() {
-	websocketHandler := WebsocketHandler()
-	receiverHandler := RecieverHandler()
+type Epoxy struct {
+	WebsocketPort int
+	ReceiverPort  int
+}
 
-	websocketMux := http.NewServeMux()
-	receiverMux := http.NewServeMux()
+func New(websocketPort, receiverPort int) *Epoxy {
+	return &Epoxy{
+		WebsocketPort: websocketPort,
+		ReceiverPort:  receiverPort,
+	}
+}
 
-	websocketMux.HandleFunc("/ws", websocketHandler)
-	receiverMux.HandleFunc("/", receiverHandler)
-
+func (e *Epoxy) Start() {
 	go func() {
-		http.ListenAndServe(":8080", websocketMux)
+		mux := http.NewServeMux()
+		mux.HandleFunc("/ws", WebsocketHandler())
+		http.ListenAndServe(fmt.Sprintf(":%d", e.WebsocketPort), mux)
 	}()
-
 	go func() {
-		http.ListenAndServe(":8081", receiverMux)
+		mux := http.NewServeMux()
+		mux.HandleFunc("/", RecieverHandler())
+		http.ListenAndServe(fmt.Sprintf(":%d", e.ReceiverPort), mux)
 	}()
 
 	select {}
-
 }

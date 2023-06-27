@@ -1,4 +1,4 @@
-package main
+package epoxy
 
 import (
 	"io"
@@ -8,14 +8,9 @@ import (
 	"github.com/google/uuid"
 )
 
-const (
-	HeaderTarget    = "X-Epoxy-Target"
-	HeaderRequestID = "X-Epoxy-Request-ID"
-)
-
 func RecieverHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		target := r.Header.Get(HeaderTarget)
+		target := r.Header.Get(EpoxyHeaderTarget)
 		if target == "" {
 			http.Error(w, "Missing X-Target header", http.StatusBadRequest)
 			return
@@ -29,7 +24,7 @@ func RecieverHandler() http.HandlerFunc {
 
 		requestID := uuid.NewString()
 
-		r.Header.Set(HeaderRequestID, requestID)
+		r.Header.Set(EpoxyHeaderRequestID, requestID)
 
 		if err := writer.Write(r); err != nil {
 			http.Error(w, "Failed to write request", http.StatusInternalServerError)

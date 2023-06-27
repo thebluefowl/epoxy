@@ -1,4 +1,4 @@
-package main
+package epoxy
 
 import "net/http"
 
