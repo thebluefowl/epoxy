@@ -1,7 +1,9 @@
 package epoxy
 
 const (
-	EpoxyHeaderSource    = "X-Epoxy-Source"
-	EpoxyHeaderTarget    = "X-Epoxy-Target"
-	EpoxyHeaderRequestID = "X-Epoxy-Request-ID"
+	EpoxyControlID = "EXY0000"
+
+	TunnelTypeWebSocket = "ws"
+
+	ProtocolTypeHTTP = "http"
 )
